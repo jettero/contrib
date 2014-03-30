@@ -1,10 +1,12 @@
 #!/usr/bin/python
+# based on https://github.com/deveth0/contrib/blob/master/plugins/bitcoin/slush_hashrate_
 # based on https://github.com/pdbrown/munin-custom/blob/master/plugins/hashrate
 # improved by @deveth0 (donation to 1GzHgp9hsDRsf96MnVk2oo6EG1VmWP9jGs :) )
 # usage: link to slush_hashrate_YOURAPIKEY
 import sys
 import urllib2
 import json
+import os
 
 SLUSH_URL = 'https://mining.bitcoin.cz/accounts/profile/json/'
 API_KEY =  sys.argv[0][(sys.argv[0].rfind('_')+1):]
@@ -20,12 +22,18 @@ if len(sys.argv) > 1:
 
 if command == 'config':
     print "graph_title Slush Hashrate"
-    print "graph_args --upper-limit 3000 -l 0"
+    print "graph_args -l 0"
     print "graph_vlabel MHash/s"
     print "graph_category Bitcoin"
     for worker in workers:
         label = worker.replace(".","_")
         print label + ".label " +label
+        wvalue = os.getenv(label + "_warning");
+        if wvalue:
+            print "%s.warning %s" % (label, wvalue)
+        cvalue = os.getenv(label + "_critical");
+        if cvalue:
+            print "%s.critical %s" % (label, cvalue)
     sys.exit(0)
 
 for worker in workers:
